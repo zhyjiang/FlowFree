@@ -16,6 +16,7 @@ class LevelChoose : public QDialog
 
 public:
     explicit LevelChoose(QWidget *parent = 0);
+    void wheelEvent(QWheelEvent *);
     ~LevelChoose();
 
 public slots:
@@ -33,6 +34,8 @@ private slots:
     void on_Back_clicked();
 
 private:
+    void readInfo();
+
     Ui::LevelChoose *ui;
     QVector<QPushButton*> m_levelButton;
     QSignalMapper m_map;

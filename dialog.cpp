@@ -8,6 +8,7 @@ Dialog::Dialog(QWidget *parent) :
     m_levelChoose(this)
 {
     ui->setupUi(this);
+    setWindowTitle("Flow Free");
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowMinimizeButtonHint |  Qt::MSWindowsFixedSizeDialogHint);
 
     connect(ui->leave, SIGNAL(clicked()), this, SLOT(leaveReceivers()));

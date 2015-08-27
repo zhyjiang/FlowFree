@@ -18,8 +18,8 @@ QColor activeColor[9] = {QColor(237, 28, 36, 100), QColor(0, 162, 232, 100),
                          QColor(255, 127, 39, 100), QColor(144, 233, 50, 100),
                          QColor(0, 0, 0, 100), QColor(185, 122, 87, 100),
                          QColor(254, 109, 221, 100)};
-int stepX[4] = {1, -1, 0, 0};
-int stepY[4] = {0, 0, 1, -1};
+int stepX[4] = {-1, 0, 0, 1};
+int stepY[4] = {0, -1, 1, 0};
 }
 
 using Resource::color;
@@ -33,12 +33,14 @@ MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
     mousePosition(0, 0),
-    m_break(":/Sound/break.wav")
+    m_break(":/Sound/break.wav", this),
+    m_bgm("SovietMarch.wav", this)
 {
     m_start = false;
     ui->setupUi(this);
     m_chosenLevel = 1;
     setWindowFlags(Qt::MSWindowsFixedSizeDialogHint);
+    m_bgm.play();
 
     connect(ui->Next_Level, SIGNAL(triggered()), this, SLOT(nextLevel()));
     connect(ui->Previous_Level, SIGNAL(triggered()), this, SLOT(previousLevel()));
@@ -49,8 +51,10 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->reStart, SIGNAL(clicked()), this, SLOT(ReStart()));
     connect(ui->actionAutoSolve, SIGNAL(triggered()), this, SLOT(autoSolve()));
     connect(ui->autoSolve, SIGNAL(clicked(bool)), this, SLOT(autoSolve()));
+    connect(this, SIGNAL(levelChange(int)), ui->lcdNumber_3, SLOT(display(int)));
     connect(this, SIGNAL(moveChange(int)), ui->lcdNumber, SLOT(display(int)));
     connect(this, SIGNAL(pipeChange(double)), ui->lcdNumber_2, SLOT(display(double)));
+    QTimer::singleShot(165000, this, SLOT(bgmPlay()));
 
     QFile file(setLevelNum(m_chosenLevel));
     file.open(QIODevice::ReadOnly | QIODevice::Text);
@@ -69,6 +73,7 @@ MainWindow::MainWindow(QWidget *parent) :
     active_Y = NOTACTIVE;
     m_move = 0;
     m_noMore = false;
+    m_totalLevel = 90;
 
     for (int i = 0; i < m_level + 5; ++i)
         for (int j = 0; j < m_level + 5; ++j)
@@ -76,6 +81,8 @@ MainWindow::MainWindow(QWidget *parent) :
 
     for(int i = 0; i < 9; ++i)
         m_rectFlag[i] = true;
+
+    readInfo();
 }
 
 MainWindow::~MainWindow()
@@ -151,6 +158,7 @@ void MainWindow::setLevel(int level)
 
     m_move = 0;
     emit moveChange(m_move);
+    emit levelChange(m_chosenLevel);
 
     pipeCheck();
 
@@ -378,8 +386,8 @@ bool MainWindow::isWin()
             }
     if(flag)
     {
-        QIcon winIcon(":/Icon/winIcon.png");
-        QPixmap winPixmap(":/Icon/winIcon.png");
+        QIcon winIcon(":/Icon/finishedIcon.png");
+        QPixmap winPixmap(":/Icon/finishedIcon.png");
         setEnabled(false);
         QMessageBox Win(this);
 
@@ -391,10 +399,12 @@ bool MainWindow::isWin()
         Win.exec();
 
         setEnabled(true);
+        m_finishedLevel[m_chosenLevel-1] = 1;
         setLevel(m_chosenLevel+1);
         m_move = 0;
         emit moveChange(m_move);
         m_win = true;
+        writeInfo();
         return true;
     }
     return false;
@@ -504,6 +514,33 @@ void MainWindow::findPath(int x, int y, int num)
             }
         }
     }
+}
+
+void MainWindow::writeInfo()
+{
+    QFile file("info.ifo");
+    file.open(QIODevice::WriteOnly | QIODevice::Text);
+
+    QTextStream txtOutput(&file);
+
+    for(int i = 0; i < m_totalLevel; ++i)
+        txtOutput << m_finishedLevel[i] << " ";
+}
+
+void MainWindow::readInfo()
+{
+    QFile file("info.ifo");
+    file.open(QIODevice::ReadOnly | QIODevice::Text);
+
+    QTextStream txtInput(&file);
+
+    for(int i = 0; i < m_totalLevel; ++i)
+        txtInput >> m_finishedLevel[i];
+}
+
+void MainWindow::bgmPlay()
+{
+    m_bgm.play();
 }
 
 QString setLevelNum(int num)

@@ -15,6 +15,7 @@
         <file>autoSolve1.png</file>
         <file>autoSolve2.png</file>
         <file>autoSolve3.png</file>
+        <file>finishedIcon.png</file>
     </qresource>
     <qresource prefix="/Sound">
         <file>break.wav</file>
@@ -110,5 +111,8 @@
         <file>Level/level88.txt</file>
         <file>Level/level89.txt</file>
         <file>Level/level90.txt</file>
+    </qresource>
+    <qresource prefix="/Font">
+        <file>BuxtonSketch.ttf</file>
     </qresource>
 </RCC>

@@ -31,6 +31,7 @@ public slots:
     void setLevel(int);
     void start();
     void leave();
+    void bgmPlay();
 
 private slots:
     void nextLevel();
@@ -43,14 +44,18 @@ signals:
     void backToStart();
     void moveChange(int);
     void pipeChange(double);
+    void levelChange(int);
 
 private:
     void findPath(int, int, int);
+    void writeInfo();
+    void readInfo();
 
     Ui::MainWindow *ui;
     Point m_point[7][7];
     QPoint mousePosition;
     QSound m_break;
+    QSound m_bgm;
 
     bool m_start;
     bool m_noMore;
@@ -58,6 +63,7 @@ private:
     int m_level;
     int m_colorNum;
     int m_origins[18][2];
+    int m_finishedLevel[200];
     bool m_rectFlag[9];
     int m_chosenLevel;
     enum {easy, normal, hard};
@@ -66,6 +72,7 @@ private:
     int m_widht;
     int active_X, active_Y;
     int m_move;
+    int m_totalLevel;
 };
 
 #endif // MAINWINDOW_H
