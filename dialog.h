@@ -20,11 +20,17 @@ public slots:
     void startReceivers();
     void leaveReceivers();
     void slotLevel(int);
+    void help();
+
+private slots:
+    void clearInfo();
+    void clear();
 
 signals:
     void start();
     void leave();
     void emitLevel(int);
+    void haveCleaned();
 
 private:
     Ui::Dialog *ui;

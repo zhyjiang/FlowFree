@@ -170,4 +170,6 @@ void LevelChoose::readInfo()
                 m_levelButton[i]->setIcon(QIcon(":/Icon/finishedIcon.png"));
         }
     }
+    file.close();
+    update();
 }

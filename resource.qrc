@@ -16,9 +16,8 @@
         <file>autoSolve2.png</file>
         <file>autoSolve3.png</file>
         <file>finishedIcon.png</file>
-    </qresource>
-    <qresource prefix="/Sound">
-        <file>break.wav</file>
+        <file>helpIcon.png</file>
+        <file>warningIcon.png</file>
     </qresource>
     <qresource prefix="/Source">
         <file>Level/level1.txt</file>

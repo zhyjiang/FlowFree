@@ -22,7 +22,7 @@
    <property name="geometry">
     <rect>
      <x>150</x>
-     <y>323</y>
+     <y>290</y>
      <width>101</width>
      <height>41</height>
     </rect>
@@ -81,7 +81,7 @@
    <property name="geometry">
     <rect>
      <x>150</x>
-     <y>280</y>
+     <y>247</y>
      <width>101</width>
      <height>41</height>
     </rect>
@@ -139,9 +139,9 @@
   <widget class="QPushButton" name="choose">
    <property name="geometry">
     <rect>
-     <x>127</x>
-     <y>232</y>
-     <width>151</width>
+     <x>150</x>
+     <y>201</y>
+     <width>101</width>
      <height>41</height>
     </rect>
    </property>
@@ -238,6 +238,97 @@
     <bool>true</bool>
    </property>
   </widget>
+  <widget class="QPushButton" name="clearInfo">
+   <property name="geometry">
+    <rect>
+     <x>290</x>
+     <y>360</y>
+     <width>101</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="palette">
+    <palette>
+     <active>
+      <colorrole role="BrightText">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+       </brush>
+      </colorrole>
+      <colorrole role="ButtonText">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>0</red>
+         <green>0</green>
+         <blue>0</blue>
+        </color>
+       </brush>
+      </colorrole>
+     </active>
+     <inactive>
+      <colorrole role="BrightText">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+       </brush>
+      </colorrole>
+      <colorrole role="ButtonText">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>0</red>
+         <green>0</green>
+         <blue>0</blue>
+        </color>
+       </brush>
+      </colorrole>
+     </inactive>
+     <disabled>
+      <colorrole role="BrightText">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+       </brush>
+      </colorrole>
+      <colorrole role="ButtonText">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>120</red>
+         <green>120</green>
+         <blue>120</blue>
+        </color>
+       </brush>
+      </colorrole>
+     </disabled>
+    </palette>
+   </property>
+   <property name="font">
+    <font>
+     <family>Buxton Sketch</family>
+     <pointsize>16</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>CLEAR INFO</string>
+   </property>
+   <property name="flat">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <zorder>title</zorder>
+  <zorder>leave</zorder>
+  <zorder>help</zorder>
+  <zorder>clearInfo</zorder>
+  <zorder>choose</zorder>
  </widget>
  <tabstops>
   <tabstop>choose</tabstop>

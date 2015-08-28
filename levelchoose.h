@@ -32,10 +32,9 @@ signals:
 private slots:
     void on_Next_clicked();
     void on_Back_clicked();
-
-private:
     void readInfo();
 
+private:
     Ui::LevelChoose *ui;
     QVector<QPushButton*> m_levelButton;
     QSignalMapper m_map;

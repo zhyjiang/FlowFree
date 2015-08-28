@@ -1,14 +1,12 @@
 #include "mainwindow.h"
 #include "dialog.h"
 #include <QApplication>
-#include <QFontDatabase>
 
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     MainWindow w;
     Dialog startMenu;
-    QFontDatabase::addApplicationFont (":/Font/BuxtonSketch.ttf");
 
     startMenu.show();
     QObject::connect(&startMenu, SIGNAL(start()), &w, SLOT(start()));

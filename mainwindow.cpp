@@ -18,8 +18,8 @@ QColor activeColor[9] = {QColor(237, 28, 36, 100), QColor(0, 162, 232, 100),
                          QColor(255, 127, 39, 100), QColor(144, 233, 50, 100),
                          QColor(0, 0, 0, 100), QColor(185, 122, 87, 100),
                          QColor(254, 109, 221, 100)};
-int stepX[4] = {-1, 0, 0, 1};
-int stepY[4] = {0, -1, 1, 0};
+int stepX[4] = {-1, 0, 1, 0};
+int stepY[4] = {0, -1, 0, 1};
 }
 
 using Resource::color;
@@ -32,14 +32,14 @@ QString setLevelNum(int);
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    mousePosition(0, 0),
-    m_break(":/Sound/break.wav", this),
-    m_bgm("SovietMarch.wav", this)
+    mousePosition(0, 0)
 {
-    m_start = false;
     ui->setupUi(this);
     m_chosenLevel = 1;
     setWindowFlags(Qt::MSWindowsFixedSizeDialogHint);
+    m_break.setMedia(QUrl::fromLocalFile("/Sound/break.mp3"));
+    m_bgm.setMedia(QUrl::fromLocalFile("/Sound/bgm.mp3"));
+    m_bgm.setVolume(50);
     m_bgm.play();
 
     connect(ui->Next_Level, SIGNAL(triggered()), this, SLOT(nextLevel()));
@@ -51,10 +51,11 @@ MainWindow::MainWindow(QWidget *parent) :
     connect(ui->reStart, SIGNAL(clicked()), this, SLOT(ReStart()));
     connect(ui->actionAutoSolve, SIGNAL(triggered()), this, SLOT(autoSolve()));
     connect(ui->autoSolve, SIGNAL(clicked(bool)), this, SLOT(autoSolve()));
+    connect(ui->actionHelp, SIGNAL(triggered()), this, SLOT(help()));
     connect(this, SIGNAL(levelChange(int)), ui->lcdNumber_3, SLOT(display(int)));
     connect(this, SIGNAL(moveChange(int)), ui->lcdNumber, SLOT(display(int)));
     connect(this, SIGNAL(pipeChange(double)), ui->lcdNumber_2, SLOT(display(double)));
-    QTimer::singleShot(165000, this, SLOT(bgmPlay()));
+    QTimer::singleShot(245000, this, SLOT(bgmPlay()));
 
     QFile file(setLevelNum(m_chosenLevel));
     file.open(QIODevice::ReadOnly | QIODevice::Text);
@@ -65,9 +66,11 @@ MainWindow::MainWindow(QWidget *parent) :
     for(int i = 0; i < m_colorNum * 2; ++i)
     {
         txtInput >> m_origins[i][0] >> m_origins[i][1];
-        m_point[m_origins[i][0]][m_origins[i][1]].color = i/2+1;
+        m_point[m_origins[i][0]][m_origins[i][1]].color[0] = i/2+1;
+        m_point[m_origins[i][0]][m_origins[i][1]].color[1] = i/2+1;
         m_point[m_origins[i][0]][m_origins[i][1]].origin = true;
     }
+    file.close();
 
     active_X = NOTACTIVE;
     active_Y = NOTACTIVE;
@@ -95,7 +98,6 @@ void MainWindow::start()
     setEnabled(true);
     show();
     pipeCheck();
-    m_start = true;
 }
 
 void MainWindow::leave()
@@ -107,10 +109,7 @@ void MainWindow::setLevel(int level)
 {
     m_chosenLevel = level;
     if(m_chosenLevel < 1)
-    {
         m_chosenLevel = 1;
-        QMessageBox::information(this, "Wrong", "This is the first level.", QMessageBox::Ok);
-    }
     else if(m_chosenLevel == 91)
     {
         QMessageBox::information(this, "Congratulation", "Finish all the levels.", QMessageBox::Yes);
@@ -140,9 +139,11 @@ void MainWindow::setLevel(int level)
     for(int i = 0; i < m_colorNum * 2; ++i)
     {
         txtInput >> m_origins[i][0] >> m_origins[i][1];
-        m_point[m_origins[i][0]][m_origins[i][1]].color = i/2+1;
+        m_point[m_origins[i][0]][m_origins[i][1]].color[0] = i/2+1;
+        m_point[m_origins[i][0]][m_origins[i][1]].color[1] = i/2+1;
         m_point[m_origins[i][0]][m_origins[i][1]].origin = true;
     }
+    file.close();
     active_X = NOTACTIVE;
     active_Y = NOTACTIVE;
     for (int i = 0; i < m_level + 5; ++i)
@@ -167,55 +168,59 @@ void MainWindow::setLevel(int level)
 
 void MainWindow::paintEvent(QPaintEvent *)
 {
-    if(m_start)
+    QPainter painter(this);
+    painter.setRenderHint(QPainter::Antialiasing, true);
+    for (int i = 1; i < m_level + 5; ++i)
     {
-        QPainter painter(this);
-        painter.setRenderHint(QPainter::Antialiasing, true);
+        painter.drawLine(55, 45 + i * 70, m_widht - 55, 45 + i * 70);
+        painter.drawLine(55 + i * 70, 45, 55 + i * 70, m_height - 75);
+    }
 
-        for (int i = 1; i < m_level + 5; ++i)
+    for (int i = 0; i < m_level + 5; ++i)
+        for (int j = 0; j < m_level + 5; ++j)
         {
-            painter.drawLine(55, 45 + i * 70, m_widht - 55, 45 + i * 70);
-            painter.drawLine(55 + i * 70, 45, 55 + i * 70, m_height - 75);
+            if(m_point[i][j].color[1] != blank && m_point[i][j].rectFlag && m_rectFlag[m_point[i][j].color[1]])
+            {
+                painter.setPen(activeColor[m_point[i][j].color[1]-1]);
+                painter.setBrush(activeColor[m_point[i][j].color[1]-1]);
+                painter.drawRect(55 + 70 * i, 45 + 70 * j, 70, 70);
+            }
         }
 
-        for (int i = 0; i < m_level + 5; ++i)
-            for (int j = 0; j < m_level + 5; ++j)
-            {
-                if(m_point[i][j].color != blank && m_point[i][j].rectFlag && m_rectFlag[m_point[i][j].color])
-                {
-                    painter.setPen(activeColor[m_point[i][j].color-1]);
-                    painter.setBrush(activeColor[m_point[i][j].color-1]);
-                    painter.drawRect(55 + 70 * i, 45 + 70 * j, 70, 70);
-                }
-            }
-
-        for (int i = 0; i < m_level + 5; ++i)
-            for (int j = 0; j < m_level + 5; ++j)
-            {
-                if(m_point[i][j].color != blank && m_point[i][j].origin)
-                {
-                    painter.setPen(color[m_point[i][j].color-1]);
-                    painter.setBrush(color[m_point[i][j].color-1]);
-                    painter.drawEllipse(QPoint(90 + 70 * i, 80 + 70 * j), 20, 20);
-                }
-                if(m_point[i][j].previous != 0)
-                {
-                    painter.setPen(QPen(QBrush(color[m_point[i][j].color-1]),
-                            15, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
-                    painter.setBrush(color[m_point[i][j].color-1]);
-                    painter.drawLine(QPoint(90 + 70 * m_point[i][j].previous->x, 80 + 70 * m_point[i][j].previous->y),
-                                     QPoint(90 + 70 * i, 80 + 70 * j));
-                }
-            }
-
-        if(active_X != NOTACTIVE)
+    for (int i = 0; i < m_level + 5; ++i)
+        for (int j = 0; j < m_level + 5; ++j)
         {
-            if(m_point[active_X][active_Y].color != blank)
+            if(m_point[i][j].color[0] != blank && m_point[i][j].origin)
             {
-                painter.setPen(activeColor[m_point[active_X][active_Y].color-1]);
-                painter.setBrush(activeColor[m_point[active_X][active_Y].color-1]);
-                painter.drawEllipse(mousePosition, 40, 40);
+                painter.setPen(color[m_point[i][j].color[0]-1]);
+                painter.setBrush(color[m_point[i][j].color[0]-1]);
+                painter.drawEllipse(QPoint(90 + 70 * i, 80 + 70 * j), 20, 20);
             }
+            if(m_point[i][j].previous[0] != 0 && !m_point[i][j].covered)
+            {
+                painter.setPen(QPen(QBrush(color[m_point[i][j].color[0]-1]),
+                        15, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+                painter.setBrush(color[m_point[i][j].color[0]-1]);
+                painter.drawLine(QPoint(90 + 70 * m_point[i][j].previous[0]->x, 80 + 70 * m_point[i][j].previous[0]->y),
+                                 QPoint(90 + 70 * i, 80 + 70 * j));
+            }
+            if(m_point[i][j].previous[1])
+            {
+                painter.setPen(QPen(QBrush(color[m_point[i][j].color[0]-1]),
+                        15, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
+                painter.setBrush(color[m_point[i][j].color[0]-1]);
+                painter.drawLine(QPoint(90 + 70 * m_point[i][j].previous[1]->x, 80 + 70 * m_point[i][j].previous[1]->y),
+                                 QPoint(90 + 70 * i, 80 + 70 * j));
+            }
+        }
+
+    if(active_X != NOTACTIVE)
+    {
+        if(m_point[active_X][active_Y].color[0] != blank)
+        {
+            painter.setPen(activeColor[m_point[active_X][active_Y].color[0]-1]);
+            painter.setBrush(activeColor[m_point[active_X][active_Y].color[0]-1]);
+            painter.drawEllipse(mousePosition, 40, 40);
         }
     }
 }
@@ -232,12 +237,12 @@ void MainWindow::mousePressEvent(QMouseEvent *mouseEvent)
         m_noMore = false;
         mousePosition.setX(mouseEvent->x());
         mousePosition.setY(mouseEvent->y());
-        if(m_point[x][y].color != blank)
-            m_rectFlag[m_point[x][y].color] = false;
-        if(m_point[x][y].color != blank && m_point[x][y].next != 0)
+        if(m_point[x][y].color[1] != blank)
+            m_rectFlag[m_point[x][y].color[1]] = false;
+        if(m_point[x][y].color[1] != blank && m_point[x][y].next[0] != 0)
         {
-            Point *tempPoint = m_point[x][y].next;
-            m_point[x][y].next = 0;
+            Point *tempPoint = m_point[x][y].next[0];
+            m_point[x][y].next[0] = 0;
             m_point[x][y].rectFlag = true;
             clearPoint(tempPoint);
         }
@@ -246,12 +251,12 @@ void MainWindow::mousePressEvent(QMouseEvent *mouseEvent)
             for (int i = 0; i < m_level + 5; ++i)
                 for (int j = 0; j < m_level + 5; ++j)
                 {
-                    if(m_point[i][j].color == m_point[x][y].color && !m_point[i][j].origin)
+                    if(m_point[i][j].color[0] == m_point[x][y].color[0] && !m_point[i][j].origin)
                         m_point[i][j].clear();
-                    if(m_point[i][j].origin && m_point[i][j].color == m_point[x][y].color)
+                    if(m_point[i][j].origin && m_point[i][j].color[0] == m_point[x][y].color[0])
                     {
-                        m_point[i][j].next = 0;
-                        m_point[i][j].previous = 0;
+                        m_point[i][j].next[0] = 0;
+                        m_point[i][j].previous[0] = 0;
                         m_point[i][j].rectFlag = false;
                     }
                 }
@@ -273,54 +278,80 @@ void MainWindow::mouseMoveEvent(QMouseEvent *mouseEvent)
         mousePosition.setX(mouseEvent->x());
         mousePosition.setY(mouseEvent->y());
         if(mouseEvent->buttons() & Qt::LeftButton && active_X != NOTACTIVE &&
-                abs(active_X - x) + abs(active_Y - y) == 1 && m_point[active_X][active_Y].next == 0 &&
-                    m_point[active_X][active_Y].color != blank)
+                abs(active_X - x) + abs(active_Y - y) == 1 && m_point[active_X][active_Y].next[1] == 0 &&
+                    m_point[active_X][active_Y].color[0] != blank)
         {
+            int temp = m_point[active_X][active_Y].previous[1]?1:0;
             if(m_point[x][y].origin != true &&
-              m_point[x][y].color != m_point[active_X][active_Y].color && !m_noMore)
+                    m_point[x][y].color[0] == blank && !m_noMore)
             {
                 m_point[x][y].rectFlag = true;
-                if(m_point[x][y].color != blank)
-                    m_break.play();
-                m_point[active_X][active_Y].next = &m_point[x][y];
-                if(m_point[x][y].previous)
-                    m_point[x][y].previous->next = 0;
-                m_point[x][y].previous = &m_point[active_X][active_Y];
-                m_point[x][y].color = m_point[active_X][active_Y].color;
+                m_point[active_X][active_Y].next[temp] = &m_point[x][y];
+                m_point[x][y].previous[0] = &m_point[active_X][active_Y];
+                m_point[x][y].color[0] = m_point[active_X][active_Y].color[0];
+                m_point[x][y].color[1] = m_point[active_X][active_Y].color[0];
                 active_X = x;
                 active_Y = y;
-                if(m_point[x][y].next != 0)
-                {
-                    Point *tempPoint = m_point[x][y].next;
-                    m_point[x][y].next = 0;
-                    clearPoint(tempPoint);
-                }
                 m_noMore = false;
             }
-            else if(m_point[x][y].color == m_point[active_X][active_Y].color &&
-                    m_point[x][y].x == m_point[active_X][active_Y].previous->x &&
-                    m_point[x][y].y == m_point[active_X][active_Y].previous->y)
+            else if(m_point[x][y].origin != true &&
+               m_point[x][y].color[0] != m_point[active_X][active_Y].color[0] && !m_noMore)
+            {
+                m_point[x][y].rectFlag = true;
+                m_point[active_X][active_Y].next[temp] = &m_point[x][y];
+                m_point[x][y].getCovered();
+                m_point[x][y].previous[1] = &m_point[active_X][active_Y];
+                m_point[x][y].color[0] = m_point[active_X][active_Y].color[0];
+                active_X = x;
+                active_Y = y;
+                m_noMore = false;
+            }
+            else if(m_point[active_X][active_Y].previous[1] && !m_point[x][y].origin)
+            {
+                if(m_point[x][y].color[0] == m_point[active_X][active_Y].color[0] &&
+                                    m_point[x][y].x == m_point[active_X][active_Y].previous[1]->x &&
+                                    m_point[x][y].y == m_point[active_X][active_Y].previous[1]->y)
+                {
+                    m_point[x][y].rectFlag = true;
+                    m_point[active_X][active_Y].next[temp] = 0;
+                    m_point[active_X][active_Y].previous[temp] = 0;
+                    if(!m_point[active_X][active_Y].previous[0]->covered)
+                        m_point[active_X][active_Y].getUncovered();
+                    m_point[active_X][active_Y].color[0] = m_point[active_X][active_Y].color[1];
+                    active_X = x;
+                    active_Y = y;
+                    temp = m_point[active_X][active_Y].previous[1]?1:0;
+                    m_point[active_X][active_Y].next[temp] = 0;
+                    m_noMore = false;
+                    return;
+                }
+            }
+            else if(m_point[x][y].color[0] == m_point[active_X][active_Y].color[0] &&
+                    m_point[x][y].x == m_point[active_X][active_Y].previous[0]->x &&
+                    m_point[x][y].y == m_point[active_X][active_Y].previous[0]->y)
             {
                 m_point[x][y].rectFlag = true;
                 if(!m_point[active_X][active_Y].origin)
                     m_point[active_X][active_Y].clear();
                 else
                 {
-                    m_point[active_X][active_Y].previous = 0;
+                    m_point[active_X][active_Y].previous[0] = 0;
                     m_point[active_X][active_Y].rectFlag = false;
                 }
+
                 active_X = x;
                 active_Y = y;
-                m_point[active_X][active_Y].next = 0;
+                temp = m_point[active_X][active_Y].previous[1]?1:0;
+                m_point[active_X][active_Y].next[temp] = 0;
                 m_noMore = false;
                 return;
             }
-            else if(m_point[x][y].color == m_point[active_X][active_Y].color &&
-                    m_point[x][y].origin == true && m_point[x][y].next == 0)
+            else if(m_point[x][y].color[0] == m_point[active_X][active_Y].color[0] &&
+                    m_point[x][y].origin && m_point[x][y].next[0] == 0)
             {
                 m_point[x][y].rectFlag = true;
-                m_point[active_X][active_Y].next = &m_point[x][y];
-                m_point[x][y].previous = &m_point[active_X][active_Y];
+                m_point[active_X][active_Y].next[temp] = &m_point[x][y];
+                m_point[x][y].previous[0] = &m_point[active_X][active_Y];
                 active_X = x;
                 active_Y = y;
                 m_noMore = true;
@@ -334,10 +365,37 @@ void MainWindow::mouseMoveEvent(QMouseEvent *mouseEvent)
 void MainWindow::mouseReleaseEvent(QMouseEvent *mouseEvent)
 {
     if(active_X != NOTACTIVE)
-        if(m_point[active_X][active_Y].origin && m_point[active_X][active_Y].previous)
+        if(m_point[active_X][active_Y].origin && m_point[active_X][active_Y].previous[0])
         {
             m_break.play();
         }
+    bool isBreak = false;
+    for (int i = 0; i < m_level + 5; ++i)
+        for (int j = 0; j < m_level + 5; ++j)
+        {
+            if(m_point[i][j].previous[1])
+            {
+                if(m_point[i][j].previous[0] && m_point[i][j].previous[1] !=
+                        m_point[i][j].previous[0])
+                    m_point[i][j].previous[0]->next[0] = 0;
+                clearPoint(m_point[i][j].next[0]);
+                m_point[i][j].color[1] = m_point[i][j].color[0];
+                m_point[i][j].next[0] = m_point[i][j].next[1];
+                m_point[i][j].previous[0] = m_point[i][j].previous[1];
+                isBreak = true;
+            }
+            if(m_point[i][j].color[0] == blank)
+                m_point[i][j].color[0] = m_point[i][j].color[1];
+        }
+    for (int i = 0; i < m_level + 5; ++i)
+        for (int j = 0; j < m_level + 5; ++j)
+        {
+            m_point[i][j].previous[1] = 0;
+            m_point[i][j].next[1] = 0;
+            m_point[i][j].covered = false;
+        }
+    if(isBreak)
+        m_break.play();
     active_X = NOTACTIVE;
     active_Y = NOTACTIVE;
     for(int i = 0; i < 9; ++i)
@@ -353,21 +411,42 @@ void MainWindow::mouseReleaseEvent(QMouseEvent *mouseEvent)
     update();
 }
 
+void MainWindow::wheelEvent(QWheelEvent *event)
+{
+    QPoint numDegrees = event->angleDelta() / 8;
+
+    if (numDegrees.y() > 0)
+        nextLevel();
+    else
+        previousLevel();
+}
+
 void MainWindow::clearPoint(Point *tempPoint)
 {
     while(tempPoint)
     {
-        if(!tempPoint->origin)
+        if(tempPoint->previous[1])
         {
-            tempPoint->previous = 0;
+            if(tempPoint->previous[0] != tempPoint->previous[1])
+                tempPoint->previous[0] = 0;
+            tempPoint = tempPoint->next[0];
+        }
+        else if(!tempPoint->origin)
+        {
+            tempPoint->previous[0] = 0;
+            tempPoint->previous[1] = 0;
             int tempX = tempPoint->x, tempY =  tempPoint->y;
-            tempPoint->color = blank;
+            tempPoint->color[0] = blank;
+            tempPoint->color[1] = blank;
             tempPoint->rectFlag = false;
-            tempPoint = tempPoint->next;
-            m_point[tempX][tempY].next = 0;
+            tempPoint->covered = false;
+            tempPoint = tempPoint->next[0];
+            m_point[tempX][tempY].next[0] = 0;
+            m_point[tempX][tempY].next[1] = 0;
         } else
         {
-            tempPoint->previous = 0;
+            tempPoint->previous[0] = 0;
+            tempPoint->previous[1] = 0;
             tempPoint->rectFlag = false;
             break;
         }
@@ -379,13 +458,18 @@ bool MainWindow::isWin()
     bool flag = true;
     for (int i = 0; i < m_level + 5; ++i)
         for (int j = 0; j < m_level + 5; ++j)
-            if(m_point[i][j].color == blank || (!m_point[i][j].next && !(int)m_point[i][j].previous))
+            if(m_point[i][j].color[0] == blank || (!m_point[i][j].next[0] && !(int)m_point[i][j].previous[0]))
             {
                 flag = false;
                 break;
             }
     if(flag)
     {
+        QMediaPlayer winSound;
+        winSound.setMedia(QUrl::fromLocalFile("/Sound/win.mp3"));
+        winSound.setVolume(120);
+        winSound.play();
+
         QIcon winIcon(":/Icon/finishedIcon.png");
         QPixmap winPixmap(":/Icon/finishedIcon.png");
         setEnabled(false);
@@ -435,9 +519,12 @@ void MainWindow::ReStart()
                 m_point[i][j].clear();
             else
             {
-                m_point[i][j].next = 0;
-                m_point[i][j].previous = 0;
+                m_point[i][j].next[0] = 0;
+                m_point[i][j].next[1] = 0;
+                m_point[i][j].previous[0] = 0;
+                m_point[i][j].previous[1] = 0;
                 m_point[i][j].rectFlag = false;
+                m_point[i][j].covered = false;
             }
         }
     m_move = 0;
@@ -452,7 +539,7 @@ void MainWindow::pipeCheck()
     for (int i = 0; i < m_level + 5; ++i)
         for (int j = 0; j < m_level + 5; ++j)
         {
-            if(m_point[i][j].color != blank)
+            if(m_point[i][j].color[0] != blank)
                 temp++;
             if(m_point[i][j].origin)
                 temp1++;
@@ -464,56 +551,72 @@ void MainWindow::autoSolve()
 {
     ReStart();
     m_win = false;
-    findPath(m_origins[0][0], m_origins[0][1], 0);
+    for(int i = 0; i < 10; ++i)
+    {
+        for(int j = 0; j < 50; ++j)
+            for(int k = 0; k < 2; ++k)
+                m_path[i][j][k] = 0;
+        m_pathLength[i] = 0;
+    }
+
+    for(int i = 0; i < m_colorNum; i++)
+    {
+        m_path[i][0][0] = m_origins[i*2][0];
+        m_path[i][0][1] = m_origins[i*2][1];
+        qDebug() << m_path[i][0][0] << m_path[i][0][1];
+        m_pathLength[i] = 1;
+    }
+    findPath(0);
     if(!m_win)
         QMessageBox::warning(this, "Wrong", "There is no answer", QMessageBox::Ok);
 }
 
-void MainWindow::findPath(int x, int y, int num)
+void MainWindow::findPath(int num)
 {
-    bool flag = false;
-    if(num >= m_colorNum*2)
+    if(num >= m_colorNum)
     {
+        for(int i = 0; i < m_colorNum; ++i)
+            for(int j = 0; j < m_pathLength[i]-1; ++j)
+            {
+                m_point[m_path[i][j][0]][m_path[i][j][1]].next[0] = &m_point[m_path[i][j+1][0]][m_path[i][j+1][1]];
+                m_point[m_path[i][j+1][0]][m_path[i][j+1][1]].previous[0] = &m_point[m_path[i][j][0]][m_path[i][j][1]];
+            }
         isWin();
         return;
     }
+    int x = m_path[num][m_pathLength[num]-1][0], y = m_path[num][m_pathLength[num]-1][1];
     for(int i = 0; i < 4; ++i)
     {
-        if(x + stepX[i] > -1 && y + stepY[i] > -1 &&
-                x + stepX[i] < m_level + 5 && y + stepY[i] < m_level + 5)
+        if(x + stepX[i] > -1 && y + stepY[i] > -1 && x + stepX[i] < m_level + 5 &&
+                y + stepY[i] < m_level + 5)
         {
-            if(m_point[x + stepX[i]][y + stepY[i]].color == blank)
+            if(!m_point[x + stepX[i]][y + stepY[i]].color[0])
             {
-                m_point[x + stepX[i]][y + stepY[i]].color = m_point[x][y].color;
-                m_point[x + stepX[i]][y + stepY[i]].previous = &m_point[x][y];
-                m_point[x][y].next = &m_point[x + stepX[i]][y + stepY[i]];
-                flag = true;
-                findPath(x + stepX[i], y + stepY[i], num);
+                m_point[x + stepX[i]][y + stepY[i]].color[0] = m_point[x][y].color[0];
+                m_path[num][m_pathLength[num]][0] = x + stepX[i];
+                m_path[num][m_pathLength[num]][1] = y + stepY[i];
+                m_pathLength[num]++;
+                findPath(num);
                 if(m_win)
                     return;
+                m_pathLength[num]--;
+                m_point[x + stepX[i]][y + stepY[i]].color[0] = blank;
             }
-            else if(m_point[x + stepX[i]][y + stepY[i]].color == m_point[x][y].color &&
-                    m_point[x + stepX[i]][y + stepY[i]].origin && !m_point[x + stepX[i]][y + stepY[i]].previous)
+            else if((x + stepX[i] == m_origins[num*2+1][0])
+                    && (y + stepY[i] == m_origins[num*2+1][1]))
             {
-                m_point[x + stepX[i]][y + stepY[i]].previous = &m_point[x][y];
-                m_point[x][y].next = &m_point[x + stepX[i]][y + stepY[i]];
-                findPath(m_origins[num+2][0], m_origins[num+2][1], num+2);
+                //qDebug() << num;
+                m_path[num][m_pathLength[num]][0] = x + stepX[i];
+                m_path[num][m_pathLength[num]][1] = y + stepY[i];
+                m_pathLength[num]++;
+                findPath(num+1);
                 if(m_win)
                     return;
-                flag = true;
-            }
-            else
-                continue;
-
-            if(flag)
-            {
-                if(!m_point[x + stepX[i]][y + stepY[i]].origin)
-                    m_point[x + stepX[i]][y + stepY[i]].color = blank;
-                m_point[x + stepX[i]][y + stepY[i]].previous = 0;
-                m_point[x][y].next = 0;
+                m_pathLength[num]--;
             }
         }
     }
+    return;
 }
 
 void MainWindow::writeInfo()
@@ -525,6 +628,7 @@ void MainWindow::writeInfo()
 
     for(int i = 0; i < m_totalLevel; ++i)
         txtOutput << m_finishedLevel[i] << " ";
+    file.close();
 }
 
 void MainWindow::readInfo()
@@ -536,11 +640,37 @@ void MainWindow::readInfo()
 
     for(int i = 0; i < m_totalLevel; ++i)
         txtInput >> m_finishedLevel[i];
+    file.close();
 }
 
 void MainWindow::bgmPlay()
 {
+    m_bgm.setMedia(QUrl::fromLocalFile("/Sound/bgm.mp3"));
+    m_bgm.setVolume(50);
     m_bgm.play();
+}
+
+void MainWindow::help()
+{
+    QIcon helpIcon(":/Icon/helpIcon.png");
+    QPixmap helpPixmap(":/Icon/helpIcon.png");
+    setEnabled(false);
+    QMessageBox help(this);
+
+    help.setWindowIcon(helpIcon);
+    help.setWindowTitle("Help");
+    help.setIconPixmap(helpPixmap);
+    help.setText("  Flow Free is a simple yet addictive puzzle game.\n"
+                 "  Connect matching colors with pipe to create a flow. Pair all colors, and cove r "
+                 "the entire board to solve each puzzle. But watch out, pipes will break if they "
+                 "cross or overlap!\n"
+                 "  Free play through lots of levels, or race against the clock in Time Trial mode. "
+                 "Gameplay ranges from simple and relaxed, to challenging and frenetic, and everywhere "
+                 "in between. How you play is up to you. So, give Flow Free a try, and experience \"mind like water\"!");
+    help.setButtonText(1, "I know.");
+    help.exec();
+
+    setEnabled(true);
 }
 
 QString setLevelNum(int num)

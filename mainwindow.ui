@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>460</width>
+    <width>539</width>
     <height>400</height>
    </rect>
   </property>
@@ -50,6 +50,9 @@ QPushButton:pressed{border-image: url(:/Icon/back_button3.png);}</string>
         </property>
         <property name="text">
          <string/>
+        </property>
+        <property name="shortcut">
+         <string>Left</string>
         </property>
        </widget>
       </item>
@@ -1424,6 +1427,9 @@ QPushButton:pressed{border-image: url(:/Icon/next_button3.png);}</string>
         <property name="text">
          <string/>
         </property>
+        <property name="shortcut">
+         <string>Right</string>
+        </property>
        </widget>
       </item>
       <item row="1" column="1">
@@ -1441,6 +1447,9 @@ QPushButton:pressed{border-image: url(:/Icon/reStart3.png);}</string>
         </property>
         <property name="text">
          <string/>
+        </property>
+        <property name="shortcut">
+         <string>R</string>
         </property>
        </widget>
       </item>
@@ -1477,6 +1486,9 @@ QPushButton:pressed{border-image: url(:/Icon/autoSolve3.png);}</string>
         <property name="text">
          <string/>
         </property>
+        <property name="shortcut">
+         <string>S</string>
+        </property>
        </widget>
       </item>
      </layout>
@@ -1488,7 +1500,7 @@ QPushButton:pressed{border-image: url(:/Icon/autoSolve3.png);}</string>
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>460</width>
+     <width>539</width>
      <height>23</height>
     </rect>
    </property>

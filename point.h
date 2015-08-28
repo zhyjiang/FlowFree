@@ -11,14 +11,17 @@ public:
     ~Point();
     void setPosition(int, int);
     void clear();
+    void getCovered();
+    void getUncovered();
 
 private:
     int x, y;
     enum {blank, red, blue, purple, yellow, orange, green, black, brown};
-    int color;
+    int color[2];
     bool origin;
+    bool covered;
     bool rectFlag;
-    Point *next, *previous;
+    Point *next[2], *previous[2];
     friend class MainWindow;
 };
 
