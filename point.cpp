@@ -15,7 +15,10 @@ Point::Point():x(0), y(0), origin(false)
 
 Point::~Point()
 {
-    delete next;
+    delete next[0];
+    delete next[1];
+    delete previous[0];
+    delete previous[1];
 }
 
 void Point::setPosition(int x1, int y1)

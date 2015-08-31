@@ -6,13 +6,15 @@ int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
     MainWindow w;
-    Dialog startMenu;
+    Dialog startMenu(&app);
 
-    startMenu.show();
-    QObject::connect(&startMenu, SIGNAL(start()), &w, SLOT(start()));
+    QObject::connect(&startMenu, SIGNAL(start(bool)), &w, SLOT(start(bool)));
+    QObject::connect(&startMenu, SIGNAL(start(bool)), &w, SLOT(start(bool)));
     QObject::connect(&startMenu, SIGNAL(leave()), &w, SLOT(leave()));
     QObject::connect(&startMenu, SIGNAL(emitLevel(int)), &w, SLOT(setLevel(int)));
     QObject::connect(&w, SIGNAL(backToStart()), &startMenu, SLOT(open()));
+
+    startMenu.show();
 
     return app.exec();
 }

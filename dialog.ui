@@ -22,7 +22,7 @@
    <property name="geometry">
     <rect>
      <x>150</x>
-     <y>290</y>
+     <y>333</y>
      <width>101</width>
      <height>41</height>
     </rect>
@@ -81,7 +81,7 @@
    <property name="geometry">
     <rect>
      <x>150</x>
-     <y>247</y>
+     <y>290</y>
      <width>101</width>
      <height>41</height>
     </rect>
@@ -139,9 +139,9 @@
   <widget class="QPushButton" name="choose">
    <property name="geometry">
     <rect>
-     <x>150</x>
+     <x>100</x>
      <y>201</y>
-     <width>101</width>
+     <width>201</width>
      <height>41</height>
     </rect>
    </property>
@@ -216,7 +216,7 @@
     </font>
    </property>
    <property name="text">
-    <string>LEVEL</string>
+    <string>ADVENTURE</string>
    </property>
    <property name="flat">
     <bool>true</bool>
@@ -324,11 +324,98 @@
     <bool>true</bool>
    </property>
   </widget>
+  <widget class="QPushButton" name="timeMode">
+   <property name="geometry">
+    <rect>
+     <x>100</x>
+     <y>246</y>
+     <width>201</width>
+     <height>41</height>
+    </rect>
+   </property>
+   <property name="palette">
+    <palette>
+     <active>
+      <colorrole role="BrightText">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+       </brush>
+      </colorrole>
+      <colorrole role="ButtonText">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>255</red>
+         <green>94</green>
+         <blue>1</blue>
+        </color>
+       </brush>
+      </colorrole>
+     </active>
+     <inactive>
+      <colorrole role="BrightText">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+       </brush>
+      </colorrole>
+      <colorrole role="ButtonText">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>255</red>
+         <green>94</green>
+         <blue>1</blue>
+        </color>
+       </brush>
+      </colorrole>
+     </inactive>
+     <disabled>
+      <colorrole role="BrightText">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>255</red>
+         <green>255</green>
+         <blue>255</blue>
+        </color>
+       </brush>
+      </colorrole>
+      <colorrole role="ButtonText">
+       <brush brushstyle="SolidPattern">
+        <color alpha="255">
+         <red>120</red>
+         <green>120</green>
+         <blue>120</blue>
+        </color>
+       </brush>
+      </colorrole>
+     </disabled>
+    </palette>
+   </property>
+   <property name="font">
+    <font>
+     <family>Buxton Sketch</family>
+     <pointsize>30</pointsize>
+    </font>
+   </property>
+   <property name="text">
+    <string>TIME MODE</string>
+   </property>
+   <property name="flat">
+    <bool>true</bool>
+   </property>
+  </widget>
   <zorder>title</zorder>
   <zorder>leave</zorder>
   <zorder>help</zorder>
   <zorder>clearInfo</zorder>
   <zorder>choose</zorder>
+  <zorder>timeMode</zorder>
  </widget>
  <tabstops>
   <tabstop>choose</tabstop>

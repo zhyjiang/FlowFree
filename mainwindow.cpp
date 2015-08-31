@@ -8,6 +8,7 @@
 #include <QFile>
 #include <string>
 #include <cmath>
+#include <ctime>
 
 namespace Resource{
 QColor color[9] = {QColor(237, 28, 36), QColor(0, 162, 232), QColor(102, 24, 126),
@@ -32,7 +33,8 @@ QString setLevelNum(int);
 MainWindow::MainWindow(QWidget *parent) :
     QMainWindow(parent),
     ui(new Ui::MainWindow),
-    mousePosition(0, 0)
+    mousePosition(0, 0),
+    m_timer(this)
 {
     ui->setupUi(this);
     m_chosenLevel = 1;
@@ -41,7 +43,10 @@ MainWindow::MainWindow(QWidget *parent) :
     m_bgm.setMedia(QUrl::fromLocalFile("/Sound/bgm.mp3"));
     m_bgm.setVolume(50);
     m_bgm.play();
+    m_timer.setInterval(1000);
+    m_timer.start();
 
+    connect(&m_timer, SIGNAL(timeout()), this, SLOT(timeIsOut()));
     connect(ui->Next_Level, SIGNAL(triggered()), this, SLOT(nextLevel()));
     connect(ui->Previous_Level, SIGNAL(triggered()), this, SLOT(previousLevel()));
     connect(ui->Back_to_Start, SIGNAL(triggered()), this, SLOT(toStart()));
@@ -76,6 +81,7 @@ MainWindow::MainWindow(QWidget *parent) :
     active_Y = NOTACTIVE;
     m_move = 0;
     m_noMore = false;
+    m_mode = false;
     m_totalLevel = 90;
 
     for (int i = 0; i < m_level + 5; ++i)
@@ -93,9 +99,11 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
-void MainWindow::start()
+void MainWindow::start(bool mode)
 {
     setEnabled(true);
+    m_mode = mode;
+    timeOver = 0;
     show();
     pipeCheck();
 }
@@ -111,12 +119,7 @@ void MainWindow::setLevel(int level)
     if(m_chosenLevel < 1)
         m_chosenLevel = 1;
     else if(m_chosenLevel == 91)
-    {
-        QMessageBox::information(this, "Congratulation", "Finish all the levels.", QMessageBox::Yes);
-        close();
-        emit backToStart();
-        return;
-    }
+        m_chosenLevel = 90;
 
     QFile file(setLevelNum(m_chosenLevel));
     if(!file.open(QIODevice::ReadOnly | QIODevice::Text))
@@ -150,7 +153,7 @@ void MainWindow::setLevel(int level)
         for (int j = 0; j < m_level + 5; ++j)
             m_point[i][j].setPosition(i, j);
 
-    m_widht = 110 + 70 * (m_level + 5);
+    m_widht = 190 + 70 * (m_level + 5);
     m_height = 100 + 70 * (m_level + 5) + 20;
     resize(m_widht, m_height);
 
@@ -162,6 +165,7 @@ void MainWindow::setLevel(int level)
     emit levelChange(m_chosenLevel);
 
     pipeCheck();
+    timeOver = 0;
 
     update();
 }
@@ -172,8 +176,8 @@ void MainWindow::paintEvent(QPaintEvent *)
     painter.setRenderHint(QPainter::Antialiasing, true);
     for (int i = 1; i < m_level + 5; ++i)
     {
-        painter.drawLine(55, 45 + i * 70, m_widht - 55, 45 + i * 70);
-        painter.drawLine(55 + i * 70, 45, 55 + i * 70, m_height - 75);
+        painter.drawLine(95, 45 + i * 70, m_widht - 95, 45 + i * 70);
+        painter.drawLine(95 + i * 70, 45, 95 + i * 70, m_height - 75);
     }
 
     for (int i = 0; i < m_level + 5; ++i)
@@ -183,7 +187,7 @@ void MainWindow::paintEvent(QPaintEvent *)
             {
                 painter.setPen(activeColor[m_point[i][j].color[1]-1]);
                 painter.setBrush(activeColor[m_point[i][j].color[1]-1]);
-                painter.drawRect(55 + 70 * i, 45 + 70 * j, 70, 70);
+                painter.drawRect(95 + 70 * i, 45 + 70 * j, 70, 70);
             }
         }
 
@@ -194,23 +198,23 @@ void MainWindow::paintEvent(QPaintEvent *)
             {
                 painter.setPen(color[m_point[i][j].color[0]-1]);
                 painter.setBrush(color[m_point[i][j].color[0]-1]);
-                painter.drawEllipse(QPoint(90 + 70 * i, 80 + 70 * j), 20, 20);
+                painter.drawEllipse(QPoint(130 + 70 * i, 80 + 70 * j), 20, 20);
             }
             if(m_point[i][j].previous[0] != 0 && !m_point[i][j].covered)
             {
                 painter.setPen(QPen(QBrush(color[m_point[i][j].color[0]-1]),
                         15, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
                 painter.setBrush(color[m_point[i][j].color[0]-1]);
-                painter.drawLine(QPoint(90 + 70 * m_point[i][j].previous[0]->x, 80 + 70 * m_point[i][j].previous[0]->y),
-                                 QPoint(90 + 70 * i, 80 + 70 * j));
+                painter.drawLine(QPoint(130 + 70 * m_point[i][j].previous[0]->x, 80 + 70 * m_point[i][j].previous[0]->y),
+                                 QPoint(130 + 70 * i, 80 + 70 * j));
             }
             if(m_point[i][j].previous[1])
             {
                 painter.setPen(QPen(QBrush(color[m_point[i][j].color[0]-1]),
                         15, Qt::SolidLine, Qt::RoundCap, Qt::RoundJoin));
                 painter.setBrush(color[m_point[i][j].color[0]-1]);
-                painter.drawLine(QPoint(90 + 70 * m_point[i][j].previous[1]->x, 80 + 70 * m_point[i][j].previous[1]->y),
-                                 QPoint(90 + 70 * i, 80 + 70 * j));
+                painter.drawLine(QPoint(130 + 70 * m_point[i][j].previous[1]->x, 80 + 70 * m_point[i][j].previous[1]->y),
+                                 QPoint(130 + 70 * i, 80 + 70 * j));
             }
         }
 
@@ -227,10 +231,10 @@ void MainWindow::paintEvent(QPaintEvent *)
 
 void MainWindow::mousePressEvent(QMouseEvent *mouseEvent)
 {
-    if(mouseEvent->x() > 55 && mouseEvent->y() > 25 && mouseEvent->x() < m_widht - 55
+    if(mouseEvent->x() > 95 && mouseEvent->y() > 25 && mouseEvent->x() < m_widht - 95
             && mouseEvent->y() < m_height - 75)
     {
-        int x = floor((mouseEvent->x()-55) / 70);
+        int x = floor((mouseEvent->x()-95) / 70);
         int y = floor((mouseEvent->y()-45) / 70);
         active_X = x;
         active_Y = y;
@@ -269,10 +273,10 @@ void MainWindow::mousePressEvent(QMouseEvent *mouseEvent)
 
 void MainWindow::mouseMoveEvent(QMouseEvent *mouseEvent)
 {
-    if(mouseEvent->x() > 55 && mouseEvent->y() > 25 && mouseEvent->x() < m_widht - 55
+    if(mouseEvent->x() > 95 && mouseEvent->y() > 25 && mouseEvent->x() < m_widht - 95
             && mouseEvent->y() < m_height - 75)
     {
-        int x = floor((mouseEvent->x()-55) / 70);
+        int x = floor((mouseEvent->x()-95) / 70);
         int y = floor((mouseEvent->y()-45) / 70);
 
         mousePosition.setX(mouseEvent->x());
@@ -507,6 +511,7 @@ void MainWindow::previousLevel()
 void MainWindow::toStart()
 {
     close();
+    m_mode = false;
     emit(backToStart());
 }
 
@@ -530,6 +535,7 @@ void MainWindow::ReStart()
     m_move = 0;
     emit moveChange(m_move);
     pipeCheck();
+    timeOver = 0;
     update();
 }
 
@@ -563,7 +569,6 @@ void MainWindow::autoSolve()
     {
         m_path[i][0][0] = m_origins[i*2][0];
         m_path[i][0][1] = m_origins[i*2][1];
-        qDebug() << m_path[i][0][0] << m_path[i][0][1];
         m_pathLength[i] = 1;
     }
     findPath(0);
@@ -605,7 +610,6 @@ void MainWindow::findPath(int num)
             else if((x + stepX[i] == m_origins[num*2+1][0])
                     && (y + stepY[i] == m_origins[num*2+1][1]))
             {
-                //qDebug() << num;
                 m_path[num][m_pathLength[num]][0] = x + stepX[i];
                 m_path[num][m_pathLength[num]][1] = y + stepY[i];
                 m_pathLength[num]++;
@@ -648,6 +652,7 @@ void MainWindow::bgmPlay()
     m_bgm.setMedia(QUrl::fromLocalFile("/Sound/bgm.mp3"));
     m_bgm.setVolume(50);
     m_bgm.play();
+    QTimer::singleShot(245000, this, SLOT(bgmPlay()));
 }
 
 void MainWindow::help()
@@ -671,6 +676,23 @@ void MainWindow::help()
     help.exec();
 
     setEnabled(true);
+}
+
+void MainWindow::youLose()
+{
+    QMessageBox::information(this, "Lose", "Oh, you fail.", QMessageBox::No);
+    ReStart();
+}
+
+void MainWindow::timeIsOut()
+{
+    timeOver++;
+    ui->lcdNumber_4->display(timeOver-1);
+    if(m_mode)
+    {
+        if(timeOver > (m_chosenLevel / 30 + 1) * 10)
+            youLose();
+    }
 }
 
 QString setLevelNum(int num)

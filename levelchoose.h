@@ -24,10 +24,12 @@ public slots:
     void chooseOver();
     void selectPage(bool);
     void start();
+    void timeMode();
+    void normalMode();
 
 signals:
     void emitLevel(int);
-    void over();
+    void over(bool);
 
 private slots:
     void on_Next_clicked();
@@ -40,6 +42,7 @@ private:
     QSignalMapper m_map;
     int currentWorld;
     int currentNum;
+    bool m_timeMode;
 };
 
 #endif // LEVELCHOOSE_H

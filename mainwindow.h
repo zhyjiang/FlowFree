@@ -4,6 +4,7 @@
 #include <QMainWindow>
 #include <QPoint>
 #include <QMediaPlayer>
+#include <Qtimer>
 #include "point.h"
 
 #define NOTACTIVE 10
@@ -30,9 +31,10 @@ public:
 
 public slots:
     void setLevel(int);
-    void start();
+    void start(bool);
     void leave();
     void bgmPlay();
+    void youLose();
 
 private slots:
     void nextLevel();
@@ -41,6 +43,7 @@ private slots:
     void ReStart();
     void autoSolve();
     void help();
+    void timeIsOut();
 
 signals:
     void backToStart();
@@ -58,7 +61,9 @@ private:
     QPoint mousePosition;
     QMediaPlayer m_break;
     QMediaPlayer m_bgm;
+    QTimer m_timer;
 
+    int timeOver;
     bool m_noMore;
     bool m_win;
     int m_level;
@@ -66,6 +71,7 @@ private:
     int m_origins[18][2];
     int m_finishedLevel[100];
     bool m_rectFlag[9];
+    bool m_mode;
     int m_chosenLevel;
     enum {easy, normal, hard};
     enum {blank, red, blue, purple, yellow, orange, green, black, brown};

@@ -7,7 +7,8 @@
 #include <QTextStream>
 #include <QDebug>
 
-Dialog::Dialog(QWidget *parent) :
+Dialog::Dialog(QApplication *a, QWidget *parent) :
+    app(a),
     QDialog(parent),
     ui(new Ui::Dialog),
     m_levelChoose(this)
@@ -17,10 +18,11 @@ Dialog::Dialog(QWidget *parent) :
     setWindowFlags(Qt::CustomizeWindowHint | Qt::WindowMinimizeButtonHint |  Qt::MSWindowsFixedSizeDialogHint);
 
     connect(ui->leave, SIGNAL(clicked()), this, SLOT(leaveReceivers()));
-    connect(ui->choose, SIGNAL(clicked()), &m_levelChoose, SLOT(start()));
+    connect(ui->choose, SIGNAL(clicked()), &m_levelChoose, SLOT(normalMode()));
+    connect(ui->timeMode, SIGNAL(clicked()), &m_levelChoose, SLOT(timeMode()));
     connect(&m_levelChoose, SIGNAL(emitLevel(int)), this, SLOT(slotLevel(int)));
-    connect(&m_levelChoose, SIGNAL(over()), this, SLOT(startReceivers()));
-    connect(&m_levelChoose, SIGNAL(over()), this, SLOT(close()));
+    connect(&m_levelChoose, SIGNAL(over(bool)), this, SLOT(startReceivers(bool)));
+    connect(&m_levelChoose, SIGNAL(over(bool)), this, SLOT(close()));
     connect(ui->help, SIGNAL(clicked(bool)), this, SLOT(help()));
     connect(ui->clearInfo, SIGNAL(clicked()), this, SLOT(clearInfo()));
 
@@ -33,15 +35,14 @@ Dialog::~Dialog()
     delete ui;
 }
 
-void Dialog::startReceivers()
+void Dialog::startReceivers(bool mode)
 {
-    emit start();
+    emit start(mode);
 }
 
 void Dialog::leaveReceivers()
 {
-    close();
-    emit leave();
+    qApp->quit();
 }
 
 void Dialog::slotLevel(int level)

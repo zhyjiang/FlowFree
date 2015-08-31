@@ -82,7 +82,7 @@ void LevelChoose::slotLevel(int level)
 void LevelChoose::chooseOver()
 {
     close();
-    emit over();
+    emit over(m_timeMode);
 }
 
 void LevelChoose::start()
@@ -138,9 +138,15 @@ void LevelChoose::selectPage(bool state)
     }
 
     temp = (currentWorld-1)*30 + (currentNum-1)*10;
-    ui->worldTitle->setText("World " + QString::number(currentWorld) + "-"
+    if(!m_timeMode)
+        ui->worldTitle->setText("World " + QString::number(currentWorld) + "-"
                             +  QString::number(currentNum) + "\n" + QString::number(currentWorld+4) +
                             "×" + QString::number(currentWorld+4));
+    else
+        ui->worldTitle->setText("World " + QString::number(currentWorld) + "-"
+                            +  QString::number(currentNum) + "\n" + QString::number(currentWorld+4) +
+                            "×" + QString::number(currentWorld+4) + "\n You have " + QString::number(currentWorld*10)
+                                + "s");
     ui->worldTitle->setAlignment(Qt::AlignCenter);
     pal.setColor(QPalette::WindowText, color[temp/10]);
     ui->worldTitle->setPalette(pal);
@@ -172,4 +178,23 @@ void LevelChoose::readInfo()
     }
     file.close();
     update();
+}
+
+void LevelChoose::timeMode()
+{
+    m_timeMode = true;
+    ui->worldTitle->setText("World " + QString::number(currentWorld) + "-"
+                        +  QString::number(currentNum) + "\n" + QString::number(currentWorld+4) +
+                        "×" + QString::number(currentWorld+4) + "\n You have " + QString::number(currentWorld*10)
+                            + "s");
+    start();
+}
+
+void LevelChoose::normalMode()
+{
+    m_timeMode = false;
+    ui->worldTitle->setText("World " + QString::number(currentWorld) + "-"
+                        +  QString::number(currentNum) + "\n" + QString::number(currentWorld+4) +
+                        "×" + QString::number(currentWorld+4));
+    start();
 }
